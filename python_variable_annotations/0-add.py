@@ -4,6 +4,7 @@ Module: 0-add
 This module provides a function to add two floats.
 """
 
+
 def add(a: float, b: float) -> float:
     """
     Add two floats and return their sum.
@@ -15,5 +16,5 @@ def add(a: float, b: float) -> float:
     Returns:
         float: The sum of a and b.
     """
-    # Calculate the sum of a and b
+    # Calculate and return the sum of a and b
     return a + b
