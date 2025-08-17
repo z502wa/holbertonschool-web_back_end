@@ -2,67 +2,69 @@
 """
 Deletion-resilient hypermedia pagination.
 
-Provides a Server with pagination that remains consistent even if some rows
-are deleted between requests.
+This module defines a Server class that paginates a CSV dataset of
+popular baby names and ensures that pagination remains consistent
+even when rows are deleted between queries.
 """
 
 import csv
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 
 class Server:
     """
     Server class to paginate a database of popular baby names.
-    Pagination remains resilient to deletions in the indexed dataset.
+    Pagination is resilient to deletions in the dataset.
     """
     DATA_FILE = "Popular_Baby_Names.csv"
 
     def __init__(self) -> None:
-        """Initialize dataset caches."""
-        self.__dataset: Optional[List[List]] = None
-        self.__indexed_dataset: Optional[Dict[int, List]] = None
+        """Initialize dataset caches for pagination."""
+        self.__dataset: List[List] = []
+        self.__indexed_dataset: Dict[int, List] = {}
 
     def dataset(self) -> List[List]:
         """
-        Load and cache the dataset (header removed).
+        Load and cache the dataset from the CSV file.
 
-        Returns the cached list on subsequent calls to avoid repeated I/O.
+        The first row (header) is skipped.
+        Subsequent calls return the cached data.
         """
-        if self.__dataset is None:
+        if not self.__dataset:
             with open(self.DATA_FILE) as f:
                 reader = csv.reader(f)
-                rows = [row for row in reader]
-            self.__dataset = rows[1:]
+                data = [row for row in reader]
+            self.__dataset = data[1:]
         return self.__dataset
 
     def indexed_dataset(self) -> Dict[int, List]:
         """
-        Build and cache an index: dataset position -> row.
+        Return the dataset indexed by position, starting at 0.
 
-        Keys start at 0 and map to the corresponding row in the dataset.
+        Returns:
+            Dict[int, List]: mapping of dataset index to row.
         """
-        if self.__indexed_dataset is None:
+        if not self.__indexed_dataset:
             data = self.dataset()
-            # kept from starter template (not used further, but harmless)
-            _truncated = data[:1000]
             self.__indexed_dataset = {i: data[i] for i in range(len(data))}
         return self.__indexed_dataset
 
-    def get_hyper_index(self, index: Optional[int] = None,
-                        page_size: int = 10) -> Dict[str, Any]:
+    def get_hyper_index(self, index: int = None, page_size: int = 10) -> Dict:
         """
-        Return a deletion-resilient page and navigation info.
+        Return a page of the dataset with deletion-resilient pagination.
 
         Args:
-            index: 0-based starting index (defaults to 0 if None).
-            page_size: number of rows to include in the page (> 0).
+            index (int): The start index of the page (0-based).
+                         Defaults to 0 if None.
+            page_size (int): Number of rows in the page (> 0).
 
         Returns:
-            Dict with:
-              - "index": the requested start index
-              - "next_index": the next index to query
-              - "page_size": actual count of returned rows
-              - "data": the page rows
+            Dict: {
+                "index": start index of the page,
+                "next_index": index to query next,
+                "page_size": number of rows returned,
+                "data": the page rows
+            }
         """
         if index is None:
             index = 0
@@ -70,22 +72,20 @@ class Server:
         assert isinstance(index, int) and index >= 0
         assert isinstance(page_size, int) and page_size > 0
 
-        idx = self.indexed_dataset()
-        # allow starting at a valid position even if the key is currently missing
-        max_key = max(idx.keys())
+        dataset_indexed = self.indexed_dataset()
+        max_key = max(dataset_indexed.keys())
         assert index <= max_key
 
         data: List[List] = []
-        cur = index
-        while len(data) < page_size and cur <= max_key:
-            row = idx.get(cur)
-            if row is not None:
-                data.append(row)
-            cur += 1
+        current = index
+        while len(data) < page_size and current <= max_key:
+            if current in dataset_indexed:
+                data.append(dataset_indexed[current])
+            current += 1
 
         return {
             "index": index,
-            "next_index": cur,
+            "next_index": current,
             "page_size": len(data),
             "data": data,
         }
