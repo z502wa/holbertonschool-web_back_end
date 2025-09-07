@@ -1,37 +1,26 @@
+/*
+ * Author: Suhail Al-aboud
+ * Email: 10675@holbertonstudents.com
+ * File: .eslintrc.js
+ * Description: ESLint config aligned with AirBnB Base for Node projects.
+ */
+
+'use strict';
+
 module.exports = {
   env: {
     browser: false,
-    es6: true,
+    es2021: true,
+    node: true,
     jest: true,
   },
-  extends: [
-    'airbnb-base',
-    'plugin:jest/all',
-  ],
-  globals: {
-    Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly',
-  },
+  extends: ['airbnb-base'],
   parserOptions: {
-    ecmaVersion: 2018,
+    ecmaVersion: 12,
     sourceType: 'module',
   },
-  plugins: ['jest'],
   rules: {
-    'max-classes-per-file': 'off',
-    'no-underscore-dangle': 'off',
     'no-console': 'off',
-    'no-shadow': 'off',
-    'no-restricted-syntax': [
-      'error',
-      'LabeledStatement',
-      'WithStatement',
-    ],
+    'import/extensions': ['error', 'ignorePackages', { js: 'always' }],
   },
-  overrides:[
-    {
-      files: ['*.js'],
-      excludedFiles: 'babel.config.js',
-    }
-  ]
 };
