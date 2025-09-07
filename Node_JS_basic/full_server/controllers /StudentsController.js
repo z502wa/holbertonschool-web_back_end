@@ -1,49 +1,22 @@
-import readDatabase from '../utils';
+import express from 'express';
+import AppController from '../controllers/AppController';
+import StudentsController from '../controllers/StudentsController';
 
-class StudentsController {
-  static getAllStudents(request, response, DATABASE) {
-    readDatabase(DATABASE)
-      .then((fields) => {
-        const students = [];
-        // let count = 0;
-        let msg;
+function controllerRouting(app) {
+  const router = express.Router();
+  app.use('/', router);
 
-        // for (const key of Object.keys(fields)) {
-        //   count += fields[key].length;
-        // }
+  router.get('/', (req, res) => {
+    AppController.getHomepage(req, res);
+  });
 
-        // students.push(`Number of students: ${count}`);
-        students.push('This is the list of our students');
+  router.get('/students', (req, res) => {
+    StudentsController.getAllStudents(req, res, process.argv[2]);
+  });
 
-        for (const key of Object.keys(fields)) {
-          msg = `Number of students in ${key}: ${
-            fields[key].length
-          }. List: ${fields[key].join(', ')}`;
-
-          students.push(msg);
-        }
-        response.send(200, `${students.join('\n')}`);
-      })
-      .catch(() => {
-        response.send(500, 'Cannot load the database');
-      });
-  }
-
-  static getAllStudentsByMajor(request, response, DATABASE) {
-    const { major } = request.params;
-
-    if (major !== 'CS' && major !== 'SWE') {
-      response.send(500, 'Major parameter must be CS or SWE');
-    } else {
-      readDatabase(DATABASE)
-        .then((fields) => {
-          const students = fields[major];
-
-          response.send(200, `List: ${students.join(', ')}`);
-        })
-        .catch(() => response.send(500, 'Cannot load the database'));
-    }
-  }
+  router.get('/students/:major', (req, res) => {
+    StudentsController.getAllStudentsByMajor(req, res, process.argv[2]);
+  });
 }
 
-export default StudentsController;
+export default controllerRouting;
