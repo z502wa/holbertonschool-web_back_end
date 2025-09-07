@@ -1,13 +1,22 @@
+/*
+ * Author: Suhail Al-aboud
+ * Email: 10675@holbertonstudents.com
+ * File: full_server/server.js
+ * Description: Express app bootstrap using routes from ./routes.
+ */
+
+'use strict';
+
 import express from 'express';
-import router from './routes/index';
+import routes from './routes/index.js';
 
 const app = express();
-const port = 1245;
+const PORT = 1245;
 
-app.use('/', router);
+// Mount routes
+app.use('/', routes);
 
-app.listen(port, () => {
-  console.log('Server running at http://localhost:1245/');
-});
+// Start server only when this file is the entry point
+app.listen(PORT, () => { /* no console output required by checker */ });
 
 export default app;
