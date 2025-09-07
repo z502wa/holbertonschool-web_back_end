@@ -1,23 +1,22 @@
-/*
- * Author: Suhail Al-aboud
- * Email: 10675@holbertonstudents.com
- * File: full_server/routes/index.js
- * Description: Express router wiring App and Students controllers.
- */
+import express from 'express';
+import AppController from '../controllers/AppController';
+import StudentsController from '../controllers/StudentsController';
 
-'use strict';
+function controllerRouting(app) {
+  const router = express.Router();
+  app.use('/', router);
 
-import { Router } from 'express';
-import AppController from '../controllers/AppController.js';
-import StudentsController from '../controllers/StudentsController.js';
+  router.get('/', (req, res) => {
+    AppController.getHomepage(req, res);
+  });
 
-const router = Router();
+  router.get('/students', (req, res) => {
+    StudentsController.getAllStudents(req, res, process.argv[2]);
+  });
 
-// Home
-router.get('/', AppController.getHomepage);
+  router.get('/students/:major', (req, res) => {
+    StudentsController.getAllStudentsByMajor(req, res, process.argv[2]);
+  });
+}
 
-// Students
-router.get('/students', StudentsController.getAllStudents);
-router.get('/students/:major', StudentsController.getAllStudentsByMajor);
-
-export default router;
+export default controllerRouting;
